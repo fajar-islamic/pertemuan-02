@@ -9,6 +9,7 @@
 
 ## 1. Kode Program Utuh (main.dart)
 
+```dart
 // =============================================
 // HW 2 - Aplikasi Manajemen Laundry Digital
 // Nama : Fajar Hikmayatul Islami
@@ -65,7 +66,7 @@ String buatPesanan({
   required TipeLayanan layanan,
 }) {
   if (berat <= 0) {
-    return 'Gagal: Berat laundry tidak valid (minimal > 0 kg)';
+    return 'Gagal: Berat laundry tidak valid';
   }
 
   double totalBiaya = hitungTotalBiaya(berat, layanan);
@@ -77,7 +78,10 @@ String buatPesanan({
     layanan: layanan,
   ));
 
-  String infoLayanan = layanan == TipeLayanan.express ? 'Express' : 'Reguler';
+  String infoLayanan = layanan == TipeLayanan.express 
+      ? 'Express' 
+      : 'Reguler';
+      
   return 'Berhasil: Pesanan $id atas nama $nama ($infoLayanan) diproses. Total: Rp ${totalBiaya.toStringAsFixed(0)}';
 }
 
@@ -85,19 +89,44 @@ void main() {
   print('=== SYSTEM TEST LAUNDRY DIGITAL ===\n');
 
   print('[Skenario 1]');
-  print(buatPesanan(id: 'LND-01', nama: 'Budi', berat: 3.0, layanan: TipeLayanan.reguler));
+  print(buatPesanan(
+    id: 'LND-01', 
+    nama: 'Budi', 
+    berat: 3.0, 
+    layanan: TipeLayanan.reguler
+  ));
 
   print('\n[Skenario 2]');
-  print(buatPesanan(id: 'LND-02', nama: 'Siti', berat: 1.0, layanan: TipeLayanan.reguler));
+  print(buatPesanan(
+    id: 'LND-02', 
+    nama: 'Siti', 
+    berat: 1.0, 
+    layanan: TipeLayanan.reguler
+  ));
 
   print('\n[Skenario 3]');
-  print(buatPesanan(id: 'LND-03', nama: 'Andi', berat: 4.0, layanan: TipeLayanan.express));
+  print(buatPesanan(
+    id: 'LND-03', 
+    nama: 'Andi', 
+    berat: 4.0, 
+    layanan: TipeLayanan.express
+  ));
 
   print('\n[Skenario 4]');
-  print(buatPesanan(id: 'LND-04', nama: 'Dewi', berat: 1.5, layanan: TipeLayanan.express));
+  print(buatPesanan(
+    id: 'LND-04', 
+    nama: 'Dewi', 
+    berat: 1.5, 
+    layanan: TipeLayanan.express
+  ));
 
   print('\n[Skenario 5]');
-  print(buatPesanan(id: 'LND-05', nama: 'Eko', berat: 0.0, layanan: TipeLayanan.reguler));
+  print(buatPesanan(
+    id: 'LND-05', 
+    nama: 'Eko', 
+    berat: 0.0, 
+    layanan: TipeLayanan.reguler
+  ));
 
   print('\n---------------------------------------');
   print('Total Pesanan Terdaftar : ${daftarPesanan.length} transaksi');
@@ -154,27 +183,27 @@ D. Algorithm & Flowchart
 Input: ID, Nama, Berat, Layanan
    │
    ▼
-Apakah Berat <= 0? ──── (Ya) ────► Return "Gagal: Berat tidak valid"
-   │ (Tidak)
-   ▼
-Apakah Berat < 2.0? ─── (Ya) ────► BeratEfektif = 2.0
-   │ (Tidak)
-   ▼
-BeratEfektif = Berat
-   │
-   ▼
-Apakah Layanan == Express? ─ (Ya) ─► TarifPerKg = 7000 * 1.5
-   │ (Tidak)
-   ▼
-TarifPerKg = 7000
-   │
-   ▼
+Apakah Berat <= 0?
+   ├── (Ya) ──► Return "Gagal: Berat tidak valid"
+   └── (Tidak)
+        │
+        ▼
+Apakah Berat < 2.0?
+   ├── (Ya) ──► BeratEfektif = 2.0
+   └── (Tidak)─► BeratEfektif = Berat
+        │
+        ▼
+Apakah Layanan == Express?
+   ├── (Ya) ──► TarifPerKg = 10500
+   └── (Tidak)─► TarifPerKg = 7000
+        │
+        ▼
 TotalBiaya = BeratEfektif * TarifPerKg
-   │
-   ▼
+        │
+        ▼
 Simpan Ke List & Return Status Berhasil
-   │
-   ▼
+        │
+        ▼
 [END]
 
 ---
