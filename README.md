@@ -1,78 +1,147 @@
-# HW 2 — Computational Thinking dengan Dart: Aplikasi Laundry Digital
+# HW 2 — Computational Thinking dengan Dart: System Perhitungan Laundry Digital
 
 **Mata Kuliah:** Aplikasi Mobile (KB1185)  
 **Dosen Pengampu:** I Ketut Gunawan, S.Kom., M.TI  
-**Nama:** [Fajar Hikmayatul Islami]  
-**NIM:** [1124160221]  
+**Nama Mahasiswa:** Fajar Hikmayatul Islami  
+**NIM:** 1124160221  
 
 ---
 
-## Bagian A — Dokumen Analisis
+## Laporan Analisis & Perancangan Sistem
+
+---
 
 ### 1. Problem Statement
-Sistem manajemen transaksi usaha laundry sederhana yang memproses perhitungan tarif pencatatan transaksi secara otomatis dan akurat berdasarkan berat pakaian dan pilihan paket layanan pelanggan.
+Banyak tempat usaha laundry tradisional yang masih mengandalkan kalkulasi biaya secara manual. Hal ini rentan memicu human error (kesalahan hitung), terutama saat berhadapan dengan aturan bisnis khusus seperti ambang batas berat minimal maupun kalkulasi biaya tambahan untuk paket layanan cepat (express). Program ini dirancang untuk memproses dan menghitung total tarif transaksi laundry secara otomatis, akurat, dan terstruktur berbasis algoritma Dart.
+
+---
 
 ### 2. Actor
-* **Admin / Kasir Laundry**: Menginputkan data transaksi (nama pelanggan, berat pakaian, dan jenis layanan).
+* **Kasir / Admin Laundry**: Operator yang memasukkan data masukan transaksi (berat pakaian dalam kilogram dan jenis paket layanan yang dipilih) serta menyampaikan rincian total tagihan biaya kepada pelanggan.
+
+---
 
 ### 3. Input & Output
-* **Input**: ID Transaksi, Nama Pelanggan, Berat Pakaian (kg), Tipe Layanan (`reguler` / `express`).
-* **Output**: Status Transaksi (`Berhasil` / `Gagal`) beserta rincian total biaya pembayaran.
+* **Input**:
+  * Berat pakaian dalam satuan kilogram (contoh: `1.0`, `1.5`, `3.0`, `4.0`).
+  * Jenis paket layanan (opsi terbatas: `reguler` atau `express`).
+* **Output**:
+  * Rincian status pemrosesan transaksi.
+  * Total harga pembayaran yang wajib dibayar pelanggan (dalam format Rupiah).
+  * Rekapitulasi akumulasi omset seluruh transaksi.
 
-### 4. Business Rules (Aturan Bisnis)
-* **BR-01**: Tarif dasar laundry sebesar Rp 7.000 per kg.
-* **BR-02**: Ketentuan berat minimal adalah 2 kg. Jika berat pakaian di bawah 2 kg (misal: 1 kg atau 1.5 kg), biaya tetap dihitung 2 kg.
-* **BR-03**: Layanan *Express* dikenakan biaya tambahan sebesar 50% dari tarif dasar (menjadi Rp 10.500 per kg).
+---
 
-### 5. Penerapan 4 Pilar Computational Thinking
-* **Decomposition**: Memecah logika kalkulasi menjadi beberapa fungsi modular: `hitungBeratEfektif()`, `hitungTarifPerKg()`, dan `hitungTotalBiaya()`.
-* **Pattern Recognition**: Menggunakan koleksi `fold()` untuk mengakumulasi total omset dari seluruh transaksi laundry yang berhasil diproses.
-* **Abstraction**: Membentuk `enum TipeLayanan` dan `class PesananLaundry` untuk menyaring variabel yang relevan saja.
-* **Algorithm**: Menggunakan struktur percabangan `if-else` dan *ternary operator* untuk mengeksekusi aturan bisnis berat minimal dan biaya express.
+### 4. Functional Requirement
+* **FR-01**: Sistem dapat memeriksa dan menyesuaikan berat pakaian berdasarkan aturan batas minimal transaksi.
+* **FR-02**: Sistem dapat menghitung total tarif berdasarkan jenis paket layanan yang dipilih pelanggan.
+* **FR-03**: Sistem dapat mengkalkulasi dan menampilkan hasil akhir total pembayaran serta rekapitulasi data ke layar.
 
-### 6. Pseudocode
+---
+
+### 5. Business Rules (Aturan Bisnis)
+* **BR-01 (Batas Minimal Berat)**: Jika berat pakaian di bawah 2 kg (misal: 1.0 kg atau 1.5 kg), maka berat transaksi secara otomatis dibulatkan dan dihitung tetap 2 kg.
+* **BR-02 (Tarif Dasar)**: Biaya dasar pengerjaan laundry adalah **Rp 7.000** per kg.
+* **BR-03 (Layanan Express)**: Jika pelanggan memilih layanan *express*, dikenakan biaya tambahan sebesar **50%** dari total tarif dasar (tarif efektif menjadi Rp 10.500 per kg).
+
+---
+
+### 6. Decomposition (Pemecahan Masalah)
+Masalah kompleks perhitungan transaksi laundry dipecah menjadi beberapa fungsi kecil (modular) yang memiliki tanggung jawab spesifik:
+
+* `hitungBeratEfektif(double beratAsli)` $\rightarrow$ Bertugas memeriksa dan membulatkan berat pakaian ke batas minimal 2 kg apabila berat asli $< 2.0$ kg (Implementasi BR-01).
+* `hitungTarifPerKg(TipeLayanan layanan)` $\rightarrow$ Bertugas menetapkan harga per kg berdasarkan jenis layanan, yaitu Rp 7.000/kg untuk reguler dan Rp 10.500/kg untuk express (Implementasi BR-02 & BR-03).
+* `hitungTotalBiaya(double beratAsli, TipeLayanan layanan)` $\rightarrow$ Bertugas mengalikan berat efektif dengan tarif per kg untuk menghasilkan total tagihan.
+* `buatPesanan(...)` $\rightarrow$ Bertugas melakukan validasi input awal, merekam data ke dalam List, dan mengembalikan pesan status.
+* `main()` $\rightarrow$ Bertugas mengksekusi skenario pengujian (test cases) serta menghitung akumulasi total pendapatan menggunakan fungsi agregasi `fold()`.
+
+---
+
+### 7. Pattern Recognition (Pengenalan Pola)
+Setiap transaksi laundry selalu mengikuti alur pola alur perhitungan berulang yang konsisten:
+
 ```text
+Input (Berat & Tipe Layanan)
+          │
+          ▼
+Cek & Penyesuaian Berat Minimal (BR-01)
+          │
+          ▼
+Kalkulasi Tarif Dasar per Kg (BR-02)
+          │
+          ▼
+Cek & Penyesuaian Biaya Express +50% (BR-03)
+
+Rumus Perhitungan Formula Bisnis:Berat Fix: Jika $\text{berat} < 2.0$, maka $\text{beratFix} = 2.0$.Tarif Dasar: $\text{totalDasar} = \text{beratFix} \times 7000$.Tambahan Express: Jika $\text{layanan} == \text{express}$, maka $\text{totalFinal} = \text{totalDasar} + (\text{totalDasar} \times 0.5)$.Simulasi Matriks Perhitungan (Contoh: 3.0 kg, Express):Komponen KalkulasiFormula PerhitunganHasil NominalTarif Dasar$3.0\text{ kg} \times \text{Rp } 7.000$Rp 21.000Tambahan Express (50%)$\text{Rp } 21.000 \times 0.5$Rp 10.500Total Biaya Akhir$\text{Rp } 21.000 + \text{Rp } 10.500$Rp 31.5008. Abstraction (Abstraksi Data)Abstraksi diterapkan untuk menyaring entitas penting dan mengabaikan detail yang tidak relevan dengan masalah transaksi:enum TipeLayanan { reguler, express }:Membatasi opsi pilihan paket pengerjaan laundry agar terhindar dari kesalahan pengetikan manual (typo) dan menjamin tipe data aman (type safety).enum StatusPesanan { diterima, diproses, selesai }:Mencatat siklus status pengerjaan cucian pelanggan.class PesananLaundry:Membungkus atribut utama transaksi (idPesanan, namaPelanggan, beratKg, layanan, status).9. Algorithm (Langkah-Langkah Logika)Menerima data masukan berupa ID, Nama, Berat Pakaian (beratKg), dan Tipe Layanan (layanan).Melakukan validasi awal: Jika beratKg <= 0, hentikan proses dan kembalikan pesan gagal.Memeriksa nilai beratKg: Jika kurang dari 2.0 kg, ubah berat efektif menjadi 2.0 kg.Menghitung tarif per kg:Jika layanan == TipeLayanan.express, tarif per kg = $7000 \times 1.5 = 10500$.Jika layanan == TipeLayanan.reguler, tarif per kg = $7000$.Mengalikan berat efektif dengan tarif per kg untuk memperoleh total biaya.Menyimpan objek transaksi ke dalam koleksi List<PesananLaundry>.Mengembalikan pesan konfirmasi berhasil beserta total harga.10. Flowchart (Proses Utama)Plaintext[START]
+   │
+   ▼
+Input: ID, Nama, Berat, Layanan
+   │
+   ▼
+Apakah Berat <= 0? ──── (Ya) ────► Return "Gagal: Berat tidak valid"
+   │ (Tidak)
+   ▼
+Apakah Berat < 2.0? ─── (Ya) ────► BeratEfektif = 2.0
+   │ (Tidak)
+   ▼
+BeratEfektif = Berat
+   │
+   ▼
+Apakah Layanan == Express? ─ (Ya) ─► TarifPerKg = 7000 * 1.5 (10500)
+   │ (Tidak)
+   ▼
+TarifPerKg = 7000
+   │
+   ▼
+TotalBiaya = BeratEfektif * TarifPerKg
+   │
+   ▼
+Simpan Ke List & Return Status Berhasil
+   │
+   ▼
+[END]
+11. PseudocodePlaintextPROCEDURE hitungBeratEfektif(beratAsli)
+    IF beratAsli <= 0 THEN
+        RETURN 0.0
+    END IF
+    IF beratAsli < 2.0 THEN
+        RETURN 2.0
+    ELSE
+        RETURN beratAsli
+    END IF
+END PROCEDURE
+
+PROCEDURE hitungTarifPerKg(layanan)
+    tarifDasar = 7000.0
+    IF layanan == express THEN
+        RETURN tarifDasar * 1.5
+    ELSE
+        RETURN tarifDasar
+    END IF
+END PROCEDURE
+
 PROCEDURE buatPesanan(id, nama, berat, layanan)
     IF berat <= 0 THEN
         RETURN "Gagal: Berat laundry tidak valid"
     END IF
     
-    IF berat < 2.0 THEN
-        beratEfektif = 2.0
-    ELSE
-        beratEfektif = berat
-    END IF
+    beratEfektif = hitungBeratEfektif(berat)
+    tarif = hitungTarifPerKg(layanan)
+    totalBiaya = beratEfektif * tarif
     
-    tarifPerKg = 7000
-    IF layanan == express THEN
-        tarifPerKg = tarifPerKg * 1.5
-    END IF
-    
-    totalBiaya = beratEfektif * tarifPerKg
     SAVE pesanan(id, nama, berat, layanan)
-    
     RETURN "Berhasil"
 END PROCEDURE
 
-BAGIAN A — DOKUMEN ANALISIS1. Problem StatementSistem manajemen transaksi usaha laundry sederhana yang memproses perhitungan tarif pencatatan transaksi secara otomatis dan akurat berdasarkan berat pakaian dan pilihan paket layanan pelanggan.2. ActorAdmin / Kasir Laundry: Menginputkan data transaksi (nama pelanggan, berat pakaian, dan jenis layanan).3. Input & OutputInput: ID Transaksi, Nama Pelanggan, Berat Pakaian (kg), Tipe Layanan (reguler / express).Output: Status Transaksi (Berhasil / Gagal) beserta rincian total biaya pembayaran.4. Business Rules (Aturan Bisnis)BR-01: Tarif dasar laundry sebesar Rp 7.000 per kg.BR-02: Ketentuan berat minimal adalah 2 kg. Jika berat pakaian di bawah 2 kg (misal: 1 kg atau 1.5 kg), biaya tetap dihitung 2 kg.BR-03: Layanan Express dikenakan biaya tambahan sebesar 50% dari tarif dasar (menjadi Rp 10.500 per kg).5. Penerapan 4 Pilar Computational ThinkingDecomposition: Memecah logika kalkulasi menjadi beberapa fungsi modular: hitungBeratEfektif(), hitungTarifPerKg(), dan hitungTotalBiaya().Pattern Recognition: Menggunakan koleksi fold() untuk mengakumulasi total omset dari seluruh transaksi laundry yang berhasil diproses.Abstraction: Membentuk enum TipeLayanan dan class PesananLaundry untuk menyaring variabel yang relevan saja.Algorithm: Menggunakan struktur percabangan if-else dan ternary operator untuk mengeksekusi aturan bisnis berat minimal dan biaya express.6. PseudocodePlaintextPROCEDURE buatPesanan(id, nama, berat, layanan)
-    IF berat <= 0 THEN
-        RETURN "Gagal: Berat laundry tidak valid"
-    END IF
-    
-    IF berat < 2.0 THEN
-        beratEfektif = 2.0
-    ELSE
-        beratEfektif = berat
-    END IF
-    
-    tarifPerKg = 7000
-    IF layanan == express THEN
-        tarifPerKg = tarifPerKg * 1.5
-    END IF
-    
-    totalBiaya = beratEfektif * tarifPerKg
-    SAVE pesanan(id, nama, berat, layanan)
-    
-    RETURN "Berhasil"
+PROCEDURE main()
+    DISPLAY buatPesanan("LND-01", "Budi", 3.0, reguler)
+    DISPLAY buatPesanan("LND-02", "Siti", 1.0, reguler)
+    DISPLAY buatPesanan("LND-03", "Andi", 4.0, express)
+    DISPLAY buatPesanan("LND-04", "Dewi", 1.5, express)
+    DISPLAY buatPesanan("LND-05", "Eko", 0.0, reguler)
 END PROCEDURE
-BAGIAN C — TABEL TRACEABILITYBusiness RuleFunction ImplementasiSkenario PengujianBR-01 (Tarif Dasar Rp 7.000/kg)hitungTarifPerKg()Skenario 1 (Budi - 3kg Reguler)BR-02 (Berat Minimal 2 kg)hitungBeratEfektif()Skenario 2 (Siti - 1kg Reguler) & Skenario 4BR-03 (Layanan Express +50%)hitungTarifPerKg()Skenario 3 (Andi - 4kg Express) & Skenario 4
+Bagian B — Tabel Traceability (Uji Kepatuhan Aturan Bisnis)Tabel berikut membuktikan bahwa seluruh Business Rules telah terimplementasi dalam fungsi dan teruji pada skenario pengujian:Business Rule (Aturan Bisnis)Function ImplementasiSkenario PengujianHasil yang Diharapkan (Expected)BR-01 (Berat Minimal 2.0 kg)hitungBeratEfektif()Skenario 2 (Siti - 1.0 kg Reguler)Berat dihitung 2 kg $\times$ 7000 = Rp 14.000BR-02 (Tarif Dasar Rp 7.000/kg)hitungTarifPerKg()Skenario 1 (Budi - 3.0 kg Reguler)Berat 3 kg $\times$ 7000 = Rp 21.000BR-03 (Layanan Express +50%)hitungTarifPerKg()Skenario 3 (Andi - 4.0 kg Express)Berat 4 kg $\times$ 10.500 = Rp 42.000Kombinasi BR-01 & BR-03hitungTotalBiaya()Skenario 4 (Dewi - 1.5 kg Express)Berat dihitung 2 kg $\times$ 10.500 = Rp 21.000Validasi Input InvalidbuatPesanan()Skenario 5 (Eko - 0.0 kg Reguler)Output: Gagal: Berat laundry tidak valid
+
+          │
+          ▼
+Hitung Total Pembayaran
